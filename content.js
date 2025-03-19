@@ -11,15 +11,18 @@ if (window.copyCheckerInitialized) {
   const LANGUAGETOOL_API = 'https://api.languagetool.org/v2/check';
 
   // Function to check spelling using LanguageTool API
-  async function checkSpellingWithAPI(text, language) {
+  async function checkSpellingWithAPI(text, language, blockContext) {
     try {
+      // If we have block context, use it to provide better context to the API
+      const textToCheck = blockContext ? blockContext.fullText : text;
+      
       const response = await fetch(LANGUAGETOOL_API, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
         },
         body: new URLSearchParams({
-          text: text,
+          text: textToCheck,
           language: language === 'UK' ? 'en-GB' : 'en-US',
           enabledOnly: 'false'
         })
@@ -34,6 +37,21 @@ if (window.copyCheckerInitialized) {
             match.message.toLowerCase().includes('whitespace') ||
             match.rule.description.toLowerCase().includes('whitespace') ||
             match.rule.category.id.toLowerCase().includes('typography');
+
+          // Filter out capitalization issues for non-sentence starts
+          const isCapitalizationIssue = match.rule.id.toLowerCase().includes('uppercase_sentence_start');
+          if (isCapitalizationIssue) {
+            // Check if this is actually the start of a sentence
+            const matchStart = match.context.offset;
+            const precedingText = blockContext?.precedingText || '';
+            const lastChar = precedingText.trim().slice(-1);
+            // If the preceding text doesn't end with sentence-ending punctuation,
+            // this isn't really the start of a sentence
+            if (lastChar && !'.!?'.includes(lastChar)) {
+              return false;
+            }
+          }
+
           return !isWhitespaceIssue;
         })
         .map(match => ({
@@ -62,7 +80,7 @@ if (window.copyCheckerInitialized) {
       return style.display === 'none' || 
              style.visibility === 'hidden' || 
              style.opacity === '0' ||
-             style.clip === 'rect(0px, 0px, 0px, 0px)' || // For elements hidden via clip
+             style.clip === 'rect(0px, 0px, 0px, 0px)' || 
              element.getAttribute('aria-hidden') === 'true';
     }
 
@@ -74,8 +92,29 @@ if (window.copyCheckerInitialized) {
       return 'standard';
     }
 
+    // Helper function to get the parent block element
+    function getParentBlock(element) {
+      const blockElements = [
+        'P', 'DIV', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6',
+        'ARTICLE', 'SECTION', 'MAIN', 'HEADER', 'FOOTER',
+        'LI', 'TD', 'TH', 'DD', 'DT', 'FIGCAPTION'
+      ];
+      
+      let current = element;
+      while (current && current !== document.body) {
+        if (blockElements.includes(current.tagName)) {
+          return current;
+        }
+        current = current.parentElement;
+      }
+      return element;
+    }
+
     // Process a DOM tree starting from a root element
     function processNode(root, isInIframe = false, isInShadow = false) {
+      // First, gather all text nodes within each block element
+      const blockElements = new Map(); // Map of block elements to their text nodes
+
       const walk = document.createTreeWalker(
         root,
         NodeFilter.SHOW_TEXT,
@@ -95,14 +134,41 @@ if (window.copyCheckerInitialized) {
       while (node = walk.nextNode()) {
         const text = node.textContent.trim();
         if (text) {
-          const contextType = getContextType(node.parentElement, isInIframe, isInShadow);
-          textNodes.push({
+          const blockParent = getParentBlock(node.parentElement);
+          if (!blockElements.has(blockParent)) {
+            blockElements.set(blockParent, []);
+          }
+          blockElements.get(blockParent).push({
             text: text,
             element: node.parentElement,
-            path: getElementPath(node.parentElement),
-            contextType: contextType
+            path: getElementPath(node.parentElement)
           });
         }
+      }
+
+      // Process each block's text nodes as a unit
+      for (const [blockParent, nodes] of blockElements) {
+        // Combine text nodes within the same block for context
+        const combinedText = nodes.map(n => n.text).join(' ');
+        const contextType = getContextType(blockParent, isInIframe, isInShadow);
+
+        // Add each text node with its surrounding context
+        nodes.forEach((nodeInfo, index) => {
+          const prevText = index > 0 ? nodes[index - 1].text : '';
+          const nextText = index < nodes.length - 1 ? nodes[index + 1].text : '';
+
+          textNodes.push({
+            text: nodeInfo.text,
+            element: nodeInfo.element,
+            path: nodeInfo.path,
+            contextType: contextType,
+            blockContext: {
+              fullText: combinedText,
+              precedingText: prevText,
+              followingText: nextText
+            }
+          });
+        });
       }
     }
 
@@ -179,8 +245,8 @@ if (window.copyCheckerInitialized) {
       // Check for double spaces
       const doubleSpaceIssues = checkDoubleSpaces(node.text);
       
-      // Check spelling
-      const spellingIssues = await checkSpellingWithAPI(node.text, language);
+      // Check spelling with block context
+      const spellingIssues = await checkSpellingWithAPI(node.text, language, node.blockContext);
 
       // If there are any issues, add them to the results with context information
       if (doubleSpaceIssues.length > 0 || spellingIssues.length > 0) {
