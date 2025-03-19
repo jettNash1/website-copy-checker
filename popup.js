@@ -163,8 +163,117 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  function displayDetailedIssues(groupedIssues) {
+    const issuesHTML = Object.entries(groupedIssues)
+      .map(([type, issues]) => {
+        if (issues.length === 0) return '';
+
+        const typeLabel = {
+          double_space: 'Double Spaces',
+          spelling: 'Spelling and Grammar Issues',
+          homophone: 'Grammar/Homophone Issues'
+        }[type];
+
+        const issuesList = issues.map((issue, index) => {
+          let issueText = issue.text;
+          if (issue.suggestion) {
+            issueText += ` (suggestion: ${issue.suggestion})`;
+          }
+          if (issue.message) {
+            issueText += ` - ${issue.message}`;
+          }
+          if (issue.rule) {
+            issueText += ` [${issue.rule}]`;
+          }
+          
+          return `
+            <div class="issue-item" data-type="${type}" data-index="${index}">
+              <input type="checkbox" class="issue-checkbox" checked aria-label="Include this issue in report">
+              <div class="issue-content">
+                <div class="issue-text">${issueText}</div>
+                <div class="issue-location">${issue.path}</div>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        return `
+          <div class="issue-group">
+            <h3>${typeLabel} (${issues.length} instances)</h3>
+            ${issuesList}
+          </div>
+        `;
+      })
+      .filter(Boolean)
+      .join('');
+
+    issuesContent.innerHTML = issuesHTML || '<p>No detailed issues to display.</p>';
+
+    // Add event listeners to checkboxes
+    document.querySelectorAll('.issue-checkbox').forEach(checkbox => {
+      checkbox.addEventListener('change', updateSummary);
+    });
+  }
+
+  function updateSummary() {
+    if (!currentIssues) return;
+
+    const groupedIssues = groupIssues(currentIssues);
+    const checkedCounts = {
+      double_space: 0,
+      spelling: 0,
+      homophone: 0
+    };
+
+    // Count checked issues
+    document.querySelectorAll('.issue-item').forEach(item => {
+      const checkbox = item.querySelector('.issue-checkbox');
+      const type = item.dataset.type;
+      if (checkbox.checked) {
+        checkedCounts[type]++;
+      }
+    });
+
+    // Update summary HTML
+    const summaryHTML = Object.entries(checkedCounts)
+      .map(([type, count]) => {
+        if (count === 0) return '';
+        
+        const typeLabel = {
+          double_space: 'Double Spaces',
+          spelling: 'Spelling and Grammar Issues',
+          homophone: 'Grammar/Homophone Issues'
+        }[type];
+
+        const totalCount = groupedIssues[type].length;
+        return `<div class="summary-item">
+          <strong>${count}</strong>/${totalCount} ${typeLabel}
+        </div>`;
+      })
+      .filter(Boolean)
+      .join('');
+
+    summaryContent.innerHTML = summaryHTML || '<p>No issues selected!</p>';
+  }
+
   function formatReportForCopy(issues) {
     const lines = [];
+    const groupedIssues = groupIssues(issues);
+    const checkedIssues = {};
+    
+    // Get checked issues
+    document.querySelectorAll('.issue-item').forEach(item => {
+      const checkbox = item.querySelector('.issue-checkbox');
+      const type = item.dataset.type;
+      const index = parseInt(item.dataset.index);
+      
+      if (checkbox.checked) {
+        if (!checkedIssues[type]) {
+          checkedIssues[type] = [];
+        }
+        checkedIssues[type].push(groupedIssues[type][index]);
+      }
+    });
     
     // Add header
     lines.push('CopyChecker Report');
@@ -174,7 +283,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Add summary
     lines.push('Summary:');
-    Object.entries(groupIssues(issues)).forEach(([type, typeIssues]) => {
+    Object.entries(checkedIssues).forEach(([type, typeIssues]) => {
       if (typeIssues.length > 0) {
         const typeLabel = {
           double_space: 'Double Spaces',
@@ -190,7 +299,7 @@ document.addEventListener('DOMContentLoaded', () => {
     lines.push('Detailed Issues:');
     lines.push('Type\tIssue\tSuggestion\tLocation');
 
-    Object.entries(groupIssues(issues)).forEach(([type, typeIssues]) => {
+    Object.entries(checkedIssues).forEach(([type, typeIssues]) => {
       typeIssues.forEach(issue => {
         const typeLabel = {
           double_space: 'Double Space',
@@ -279,50 +388,6 @@ document.addEventListener('DOMContentLoaded', () => {
       .join('');
 
     summaryContent.innerHTML = summaryHTML || '<p>No issues found!</p>';
-  }
-
-  function displayDetailedIssues(groupedIssues) {
-    const issuesHTML = Object.entries(groupedIssues)
-      .map(([type, issues]) => {
-        if (issues.length === 0) return '';
-
-        const typeLabel = {
-          double_space: 'Double Spaces',
-          spelling: 'Spelling and Grammar Issues',
-          homophone: 'Grammar/Homophone Issues'
-        }[type];
-
-        const issuesList = issues.map(issue => {
-          let issueText = issue.text;
-          if (issue.suggestion) {
-            issueText += ` (suggestion: ${issue.suggestion})`;
-          }
-          if (issue.message) {
-            issueText += ` - ${issue.message}`;
-          }
-          if (issue.rule) {
-            issueText += ` [${issue.rule}]`;
-          }
-          
-          return `
-            <div class="issue-item">
-              <div class="issue-text">${issueText}</div>
-              <div class="issue-location">${issue.path}</div>
-            </div>
-          `;
-        }).join('');
-
-        return `
-          <div class="issue-group">
-            <h3>${typeLabel} (${issues.length} instances)</h3>
-            ${issuesList}
-          </div>
-        `;
-      })
-      .filter(Boolean)
-      .join('');
-
-    issuesContent.innerHTML = issuesHTML || '<p>No detailed issues to display.</p>';
   }
 
   function showError(message) {
