@@ -240,6 +240,16 @@ if (window.copyCheckerInitialized) {
   async function analyzePageContent(language) {
     const textNodes = extractPageContent();
     let allIssues = [];
+    
+    // Calculate total work units (one for extraction, one for each node analysis)
+    const totalWork = textNodes.length + 1;
+    let completedWork = 1; // Count extraction as first completed work
+
+    // Report initial progress
+    chrome.runtime.sendMessage({
+      action: 'analysisProgress',
+      progress: Math.round((completedWork / totalWork) * 100)
+    });
 
     for (const node of textNodes) {
       // Check for double spaces
@@ -267,6 +277,13 @@ if (window.copyCheckerInitialized) {
           issues: issues
         });
       }
+
+      // Update progress after each node is processed
+      completedWork++;
+      chrome.runtime.sendMessage({
+        action: 'analysisProgress',
+        progress: Math.round((completedWork / totalWork) * 100)
+      });
     }
 
     return allIssues;

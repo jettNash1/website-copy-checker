@@ -27,8 +27,10 @@
 
       <div class="results-container">
         <div id="loading" class="hidden">
-          <div class="spinner"></div>
-          <p>Analyzing page content...</p>
+          <div class="progress-container">
+            <div id="progress-bar" class="progress-bar"></div>
+          </div>
+          <p id="progress-text">Analyzing page content... <span id="progress-percentage">0%</span></p>
         </div>
 
         <div id="results" class="hidden">

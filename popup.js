@@ -9,9 +9,24 @@ document.addEventListener('DOMContentLoaded', () => {
   const copySection = document.getElementById('copySection');
   const copyReportButton = document.getElementById('copyReport');
   const copySuccessMessage = copyReportButton.querySelector('.copy-success');
+  const progressBar = document.getElementById('progress-bar');
+  const progressPercentage = document.getElementById('progress-percentage');
 
   let currentLanguage = 'UK';
   let currentIssues = null;
+
+  // Function to update progress bar
+  function updateProgress(percent) {
+    progressBar.style.width = `${percent}%`;
+    progressPercentage.textContent = `${percent}%`;
+  }
+
+  // Listen for progress updates
+  chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.action === 'analysisProgress') {
+      updateProgress(message.progress);
+    }
+  });
 
   // Load saved language preference and last results
   chrome.storage.local.get(['language', 'lastResults', 'lastUrl'], (result) => {
@@ -81,11 +96,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Handle page check
   checkPageButton.addEventListener('click', async () => {
-    // Show loading state
+    // Show loading state and reset progress
     loadingElement.classList.remove('hidden');
     resultsElement.classList.add('hidden');
     noIssuesElement.classList.add('hidden');
     copySection.classList.add('hidden');
+    updateProgress(0);
 
     try {
       // Get the active tab
@@ -119,6 +135,7 @@ document.addEventListener('DOMContentLoaded', () => {
       showError('Failed to analyze page. Please try again.');
     } finally {
       loadingElement.classList.add('hidden');
+      updateProgress(0); // Reset progress bar
     }
   });
 

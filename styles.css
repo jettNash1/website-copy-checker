@@ -181,19 +181,30 @@ input:checked ~ .switch-label.us {
   display: none;
 }
 
-.spinner {
-  width: 40px;
-  height: 40px;
-  margin: 0 auto;
-  border: 4px solid var(--border-color);
-  border-top: 4px solid var(--primary-color);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
+.progress-container {
+  width: 100%;
+  height: 20px;
+  background-color: var(--border-color);
+  border-radius: 10px;
+  margin: 20px 0;
+  overflow: hidden;
 }
 
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+.progress-bar {
+  width: 0%;
+  height: 100%;
+  background-color: var(--primary-color);
+  transition: width 0.3s ease;
+}
+
+#progress-text {
+  text-align: center;
+  color: var(--text-color);
+  margin: 10px 0;
+}
+
+#progress-percentage {
+  font-weight: bold;
 }
 
 .summary, .issues {
