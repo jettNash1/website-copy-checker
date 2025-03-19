@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>CopyChecker</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>CopyChecker</h1>
+      <div class="language-toggle">
+        <label class="switch">
+          <span class="switch-label uk">UK</span>
+          <input type="checkbox" id="toggleLanguage" aria-label="Toggle between UK and US English">
+          <span class="slider"></span>
+          <span class="switch-label us">US</span>
+        </label>
+      </div>
+    </header>
+
+    <main>
+      <div class="actions">
+        <button id="checkPage" class="primary-button" aria-label="Check current page for issues">
+          Check Page
+        </button>
+      </div>
+
+      <div class="results-container">
+        <div id="loading" class="hidden">
+          <div class="spinner"></div>
+          <p>Analyzing page content...</p>
+        </div>
+
+        <div id="results" class="hidden">
+          <div class="summary">
+            <h2>Summary</h2>
+            <div id="summaryContent"></div>
+          </div>
+
+          <div class="issues">
+            <h2>Detailed Issues</h2>
+            <div id="issuesContent"></div>
+          </div>
+
+          <div id="copySection" class="copy-section hidden">
+            <button id="copyReport" class="secondary-button" aria-label="Copy report to clipboard">
+              <span class="button-text">Copy Report</span>
+              <span class="copy-success hidden">Copied!</span>
+            </button>
+          </div>
+        </div>
+
+        <div id="noIssues" class="hidden">
+          <p>No issues found! Your copy looks good.</p>
+        </div>
+      </div>
+    </main>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html> 
