@@ -244,10 +244,6 @@ h2 {
   margin-bottom: 0;
 }
 
-.issue-checkbox {
-  margin-top: 0.25rem;
-}
-
 .issue-content {
   flex: 1;
 }
@@ -261,40 +257,48 @@ h2 {
   color: #6b7280;
 }
 
-/* Custom checkbox styles */
+/* Checkbox styles - consolidated and improved */
 .issue-checkbox {
   -webkit-appearance: none;
   appearance: none;
-  width: 1.25rem;
-  height: 1.25rem;
-  border: 2px solid var(--primary-color);
-  border-radius: 0.25rem;
+  width: 16px;
+  height: 16px;
+  border: 1px solid #333;
+  border-radius: 3px;
   outline: none;
   cursor: pointer;
   position: relative;
-  transition: all 0.2s;
+  margin: 0.25rem 0 0 0;
+  padding: 0;
+  flex-shrink: 0;
+  background-color: white;
+  transition: all 0.2s ease;
 }
 
 .issue-checkbox:checked {
   background-color: var(--primary-color);
+  border-color: var(--primary-color);
 }
 
 .issue-checkbox:checked::after {
-  content: "✓";
+  content: "";
   position: absolute;
-  color: white;
-  font-size: 0.875rem;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
+  left: 5px;
+  top: 2px;
+  width: 4px;
+  height: 8px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
 }
 
 .issue-checkbox:hover {
-  border-color: var(--secondary-color);
+  border-color: var(--primary-color);
 }
 
-.issue-checkbox:checked:hover {
-  background-color: var(--secondary-color);
+.issue-checkbox:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
 }
 
 .error-message {

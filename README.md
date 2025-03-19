@@ -4,7 +4,10 @@ A powerful browser extension for Chrome and Edge that helps you identify and fix
 
 ## Features
 
-- **Real-time Copy Analysis**: Instantly analyze any webpage for common copy issues
+- **Real-time Copy Analysis**: 
+  - Instantly analyze any webpage for common copy issues
+  - Live progress tracking during analysis
+  - Visual progress bar with percentage completion
 - **Dual Language Support**: Switch between UK (British) and US (American) English
 - **Comprehensive Coverage**:
   - Main page content
@@ -15,6 +18,10 @@ A powerful browser extension for Chrome and Edge that helps you identify and fix
   - Spelling mistakes and typos
   - Double spaces
   - Detailed error messages and suggestions
+- **Interactive Issue Management**:
+  - Selectively include/exclude issues via checkboxes
+  - Real-time summary updates as issues are toggled
+  - Customize reports by selecting relevant issues
 - **Smart State Management**: 
   - Tab-specific results that persist while browsing
   - Results automatically saved per tab
@@ -26,6 +33,7 @@ A powerful browser extension for Chrome and Edge that helps you identify and fix
   - Context information (iframe, shadow DOM, hidden elements)
   - Suggested corrections
   - Easy-to-understand error messages
+  - Customizable report content based on selected issues
 
 ## Result Persistence
 
@@ -42,6 +50,24 @@ This behavior ensures that:
 - You can browse other tabs without losing your results
 - You can return to previously checked tabs to review findings
 - Results always stay relevant to the current page you're viewing
+
+## Analysis Progress
+
+The extension provides real-time feedback during analysis:
+- Visual progress bar shows completion percentage
+- Live updates as each section of the page is analyzed
+- Clear indication of when analysis is complete
+- Helps users understand how much longer the analysis will take
+
+## Issue Management
+
+Each detected issue can be managed individually:
+- Checkbox next to each issue to include/exclude from reports
+- All issues checked by default
+- Real-time summary updates as issues are toggled
+- Excluded issues won't appear in copied reports
+- Helps remove false positives or unwanted detections
+- Summary shows count of selected vs. total issues
 
 ## What Gets Checked
 
@@ -87,13 +113,16 @@ Important Limitations:
    - Toggle switch to the left for UK English
    - Toggle switch to the right for US English
 3. Click "Check Page" to analyze the current webpage
-4. Review the results in two sections:
+4. Monitor the progress bar as the page is analyzed
+5. Review the results in two sections:
    - Summary: Quick overview of issues found
    - Detailed Issues: Complete list of issues with:
+     - Checkbox to include/exclude from report
      - Issue description
      - Suggested correction
      - Location in the page
-5. Use the "Copy Report" button to copy a full report to your clipboard
+6. Use checkboxes to select which issues to include in your report
+7. Use the "Copy Report" button to copy a report of selected issues to your clipboard
 
 ## Technical Details
 
