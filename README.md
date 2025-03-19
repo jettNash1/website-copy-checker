@@ -16,14 +16,32 @@ A powerful browser extension for Chrome and Edge that helps you identify and fix
   - Double spaces
   - Detailed error messages and suggestions
 - **Smart State Management**: 
-  - Results persist when switching between tabs
-  - Results automatically clear when navigating to a new page
+  - Tab-specific results that persist while browsing
+  - Results automatically saved per tab
+  - Results restored when returning to analyzed tabs
+  - Results cleared only when navigating to a new page
 - **Structured Reports**: 
   - Clear issue categorization
   - Precise location tracking for each issue
   - Context information (iframe, shadow DOM, hidden elements)
   - Suggested corrections
   - Easy-to-understand error messages
+
+## Result Persistence
+
+The extension implements a smart result management system:
+- Results are saved specifically for each tab
+- When you check a page, the results are stored for that specific tab
+- If you switch to a different tab, the popup will appear empty
+- When you return to a previously checked tab, your results will automatically reappear
+- Results are only cleared in two cases:
+  1. When you navigate to a new page within the tab
+  2. When you perform a new check on the current page
+
+This behavior ensures that:
+- You can browse other tabs without losing your results
+- You can return to previously checked tabs to review findings
+- Results always stay relevant to the current page you're viewing
 
 ## What Gets Checked
 
